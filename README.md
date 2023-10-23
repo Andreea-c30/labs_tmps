@@ -1,4 +1,4 @@
-# Topic: Creational Design Patterns
+# Topic: Structural Design Patterns
 
 
 # Author: Andreea CHIPER
@@ -6,160 +6,239 @@
 ----
 
 ## Objectives:
-&ensp; &ensp; __1. Study and understand the Creational Design Patterns.__
+&ensp; &ensp; __1. Study and understand the Structural Design Patterns.__
 
-&ensp; &ensp; __2.Choose a domain, define its main classes/models/entities and choose the appropriate instantiation mechanisms__
+&ensp; &ensp; __2. As a continuation of the previous laboratory work, think about the functionalities that your system will need to provide to the user.__
 
-&ensp; &ensp;__3.Use some creational design patterns for object instantiation in a sample project.__
+&ensp; &ensp;__3. Implement some additional functionalities, or create a new project using structural design patterns__
 
 ## Implementation
 
-To implement and illustrate the  Creational design patterns, I had developed a medical appointment management system that handles patient appointments and associated data.
-The classes and interfaces form the basics of the medical management system, allowing for the representation of patients, doctors, appointments and the interactions between them.
+To implement and illustrate the Structural design patterns, I had developed a medical appointment management system that handles patient appointments and associated data. The classes and interfaces form the basics of the medical management system, allowing for the representation of doctors, appointments,bills, prescriptions and the interactions between them.
 
-I have implemented 4 creational design patterns in various ways throughout the project such as:
+I have implemented 4 structural design patterns in various ways throughout the project such as:
 
-1. Factory Method
+1. Adapter
 
-    The Factory Method is a creational design pattern that provides an interface for creating objects in a super class but allows subclasses to alter the type of objects that will be created. 
+Adapter design pattern is one of the structural design pattern and its used so that two unrelated interfaces can work together. 
 
-    IAppointmentFactory is the factory interface that defines a method createAppointment for creating instances of the Appointment class.
+The IPrescription is an interface that defines an interface for prescriptions. It has three methods: prescriptionType(), writePrescription(), and validation()
 
-    ```
-    public interface IAppointmentFactory {
-        Appointment createAppointment(int id, String appointmentDate, Patient patient, Doctor doctor);
-    } 
-    ```
+ ```
+ public interface IPrescription {
+    void prescriptionType();
+    void writePrescription();
+    boolean validation();
 
-    PediatricAppointmentFactory and RegularAppointmentFactory this classes implement the IAppointmentFactory interface.
-
-    They override the createAppointment method from the interface and create PediatricAppointment and RegularAppointment instances and initialize them with the provided parameters along with an additional attribute "reason"
-
-    ```
-    public class PediatricAppointmentFactory implements IAppointmentFactory {
-    @Override
-    public Appointment createAppointment(int id, String appointmentDate, Patient patient, Doctor doctor) {
-        return new PediatricAppointment(id, appointmentDate, patient, doctor, "Pediatric Reason");
-    }
-    }
-    ```
-    ```
-    public class RegularAppointmentFactory implements IAppointmentFactory {
-    @Override
-    public Appointment createAppointment(int id, String appointmentDate, Patient patient, Doctor doctor) {
-        return new RegularAppointment(id, appointmentDate, patient, doctor, "Regular Type");
-    }
-    }
-    ```
-
-2. Singleton design pattern
-
-    The Singleton design pattern ensures that a class has only one instance and provides a global point of access to that instance. It ensures that there is only one Billing instance throughout the application, which can be accessed by multiple parts
-
-    Having a private constructor, it cannot be instantiated from outside the class.
-
-    The class maintains a private static variable bill to hold the single instance of the Billing class.
-    The getbill() method is a public static method that provides access to the single instance of the Billing class
-
-   ```
-   public static Billing getbill() {
-        if (bill == null) {
-            synchronized (Billing.class) {
-                if (bill == null) {
-                    bill = new Billing();
-                }
-            }
-        }
-        return bill;
-    }
-   ```
-
-   The bill method is a public method for performing billing operations. It takes a Patient object and a cost as parameters and it prints a message indicating the billing amount for the patient.
-
-   ```
-     public void bill(Patient patient, double cost) {
-        System.out.println("Billing " + patient.getFirstName() + cost+"lei");
-    }
-   ```
+}
+ ```
    
-3. Builder design pattern
+MedicationPrescription class represents a medication prescription and can implement directly the IPrescription interface. It provides specific functionality for medication prescriptions, including writing the prescription and validating it.
 
-    Builder design pattern is a useful mathod when you have classes with many properties, and it allows for more readable and maintainable code when constructing objects. I implemented this pattern for the Physician class, which allows us to construct Physician objects easily
-    
-    Physician Class represents a Physician object with various properties like id, firstName, lastName, email, experience_years, specialization, and position.
-        
-    The IBuilder Interface - defines a set of methods that represent building steps for constructing a Physician object
+However PhysicalTherapy class represents a physical therapy treatment plan. It has its own methods for prescribing and executing the treatment plan and can not implement directly the IPrescription interface. For intance this are the methods from the class:
 
-    ```
-    public interface IBuilder {
-    IBuilder id(int id);
-    IBuilder firstName(String firstName);
-    IBuilder lastName(String lastName);
-    IBuilder email(String email);
-    IBuilder expirience_years(int expirience_years);
-    IBuilder specialization(String specialization);
-    IBuilder position(String position) ;
+```
+public void prescribePhysicalTherapy() {
+        System.out.println("Prescribing physical therapy");
+    }
+
+    public void executeTreatmentPlan() {  
+
+        System.out.println("Executing treatment plan:");
+       
+        System.out.println("Plan: " + treatmentPlan);
+
+    }
+
+```
+Thus it will use PhysicalTherapyAdapter to adapt to the interface.
+
+PhysicalTherapyAdapter is the adapter class that allows instances of PhysicalTherapy to be treated as IPrescription. It delegates the calls to the appropriate methods of the PhysicalTherapy class such as:
+```
+  @Override
+    public void prescriptionType() {
+        physicalTherapy.prescribePhysicalTherapy();
+    }
+
+    @Override
+    public void writePrescription() {
+        physicalTherapy.executeTreatmentPlan();
+    }
+
+```
+
+This approach allows us to work with different types of prescriptions in a consistent way.
+
+2. Bridge
+
+The Bridge pattern is used to separate an object's abstraction from its implementation, allowing both to vary independently. 
+
+Havin an abstract class Appointment contains common attributes such as id, appointmentDate, patient, and doctor.
+It also declares abstract methods schedule() and update()
+
+```
+public abstract class Appointment{
+    int id;
+    String appointmentDate;
+    String patient,doctor;
+
+    public abstract void schedule();
+    public abstract void update();
+}
+```
+
+RegularAppointment and UrgentAppointment classes extend Appointment and implement the schedule() and update() methods specific to regular and urgent appointments
+
+Registry is the abstract class that serves as the implementor. It contains a reference to an Appointment object.
+``` 
+protected Appointment appointment;
+```
+It declares abstract methods addId(), addDoctor(), and addPatient(), which are used to set appointment attributes.
+```
+    abstract void addId();
+    abstract void addDoctor();
+    abstract void addPatient();
+```
+It has a createappointment() method that orchestrates the creation of appointments by first adding attributes and then scheduling the appointment
+```
+public void createappointment(){
+        addDoctor();
+        addPatient();
+        addId();
+        appointment.schedule();
+        System.out.println("Appointment Created Scuccessfully!");
+    }
+```  
+PediatricRegistry and AdultRegistry these classes extend Registry and implement the abstract methods to set attributes specific to pediatric and adult appointments, such as the patient's name and doctor's name.
+For instance the PediatricRegistry:
+```
+public class PediatricRegistry extends Registry{
+    public PediatricRegistry(Appointment appointment)
+{
+    super(appointment);
+}    
+   @Override
+    public void addId()
+    {
+        Random random = new Random();
+         int nr = random.nextInt(200) + 100;
+        appointment.setId(nr);
+    }
+    @Override
+     public void addPatient(){
+        appointment.setPatient("Y Patient");
      }
-    ```
+  
+    @Override
+    public void addDoctor(){
+        appointment.setDoctor("Pediatric doctor");
+    } 
+}
+```
+The bridge pattern allows to separate the abstraction, the type of appointment and its attributes, from the implementation and provides flexibility in creating various types of appointments.
 
-    PhysicianBuilder Class implements the IBuilder interface, providing methods for setting the values of the Physician properties.
-    It has private fields to store the properties of a Physician, such as id, firstName, lastName, etc.
+3. Decorator
 
+The Decorator pattern is a structural design pattern that allows behavior to be added to individual objects, either statically or dynamically, without affecting the behavior of other objects from the same class.
+   
+IBilling is the interface that defines the common interface for all billing objects
+```
+public interface IBilling {
+    void bill();
+}
+```
 
-    For each property, there is a corresponding method in the builder class. When you call one of these methods, it sets the value of the associated property and returns the builder instance itself. This is an example of such method that returns the id:
-    ```
-    public PhysicianBuilder id(int id) {
-        this.id = id;
-        return this;
+AppointmentBill class implements the IBilling interface and represents a basic billing object for appointments. It has attributes like name and cost and provides a bill method to print the appointment cost.
+
+BaseBillDecorator is an abstract class that implements the IBilling interface. It contains a reference to another IBilling object named wrapped and asign the bill method to the wrapped object.
+```
+ @Override
+    public void bill() {
+        wrapped.bill();
     }
-    ```
-    The build method creates a new Physician object using the values set for the properties and returns it.
+```
+This serves as the base class for concrete decorators.
 
-    ```
-    public Physician build() {
-        return new Physician(id, firstName, lastName, email, expirience_years,specialization, position);
+MedicationBillDecorator class extends BaseBillDecorator and represents a decorator for medication billing. It adds medication costs to the bill by overriding the bill method.
+```
+@Override
+    public void bill() {
+        super.bill();
+        System.out.println("Fee for medication : " + " cost " + cost);
     }
-    ```
-4. Prototype design pattern
+```
 
-    The Prototype pattern allows us to create new objects by copying an existing object, which can be useful when you want to create objects with similar initial states
+With decorator design pattern we can create various billing components and decorate them with additional functionalities without altering their core behavior. In this case, the MedicationBillDecorator adds costs to the appointment bill.
 
-    IPrescriptionPrototype interface declares a method clone(), which returns a clone of an object that implements this interface.
-    By extending Cloneable, it indicates that the implementing classes are cloneable.
-    ```
-    public interface IPrescriptionPrototype extends Cloneable {
-    IPrescriptionPrototype clone(); 
+4. Composite
+
+The Composite pattern is a structural design pattern that allows you compose objects into tree structures to represent part-whole hierarchies.
+
+IMedicalProfessional is the interface that defines the common interface for both individual medical professionals and medical groups
+
+```
+public interface IMedicalProfessional {
+    void prescribeMedication(Patient patient, String medication);
+    String getName();
+}
+
+```
+
+MedicalGroup class represents a group of medical professionals, which is a composite object. 
+
+It maintains a list of I
+IMedicalProfessional objects:
+
+``` 
+private List<IMedicalProfessional> professionals = new ArrayList<>();
+```
+
+
+It provides methods to add and remove medical professionals:
+```
+public void addMedicalProfessional(IMedicalProfessional professional) {
+        professionals.add(professional);
     }
 
-    ```
-    MedicationPrescription class implements the IPrescriptionPrototype interface. It has a constructor that prints a message when a MedicationPrescription object is created.
-    The clone method is implemented to create a clone of the MedicationPrescription object. 
-    The clone method is used to create a copy.
-    ```
-    	public IPrescriptionPrototype clone() {
-		System.out.println("MedicationPrescription was copied");
-		MedicationPrescription medicine = null;
-		try {
-			medicine = (MedicationPrescription) super.clone();
-		}
-		catch (CloneNotSupportedException e) {  
-			System.out.println("exception");
-			e.printStackTrace();
-		 }
-		return medicine;
-	}
-    ```
+    public void removeMedicalProfessional(IMedicalProfessional professional) {
+        professionals.remove(professional);
+    }
+```
 
-    CloneFactory class is responsible for creating clones of objects that implement the IPrescriptionPrototype interface 
-    The getClone method takes a IPrescriptionPrototype object as an argument and calls its clone method to create a copy of the object.
-    ```
-    public class CloneFactory {
-            public IPrescriptionPrototype getClone(IPrescriptionPrototype sample) {
-                return sample.clone();
-            }
+The prescribeMedication method is implemented to prescribe medication prescription to all the medical professionals within the group.
+```
+@Override
+    public void prescribeMedication(Patient patient, String medication) {
+        for (IMedicalProfessional professional : professionals) {
+            professional.prescribeMedication(patient, medication);
         }
-    ```
+    }
+```
+The getName method returns the name of the medical group.
+```
+@Override
+    public String getName() {
+        
+        return "Medical Team";
+    }
+```
+Physician also named as the leaf is the class that represents an individual medical professional, in this case, a physician.
+It implements the IMedicalProfessional interface and provides specific functionality for a physician.
+The prescribeMedication method allows the physician to prescribe medication to a patient.
+```
+ @Override
+    public void prescribeMedication(Patient patient, String medication) {
+        System.out.println(this.getFirstName() + " " + this.getLastName() + " prescribes " + medication + " to " + patient.getFirstName()+" "+patient.getLastName());
+    }
+```
+The getName method returns the physician's name.
 
+```
+ @Override
+    public String getName() {
+        return this.getFirstName() + " " + this.getLastName();
+    }
+```
 
 ## Conclusions / Screenshots / Results
-In this laboratory work, I created an healthcare management system while combining the required Factory, Singleton, Builder, and Prototype design patterns. These design patterns enabled me to easily clone prescription items, ensure a single instance of the billing system, and boost up the construction of complex objects.  These design patterns are useful tools for enhancing the scalability and quality of applications.
+In this laboratory work, I created an healthcare management system while combining the required Adapter, Bridge, Composite, and Decorator design patterns.The Adapter facilitated seamless integration of prescription types, the Bridge structured medical professionals and groups, the Composite organized appointments, and the Decorator dynamically enhanced billing. These design patterns made the system versatile, adaptable, and organized, ensuring its effectiveness in healthcare management.
