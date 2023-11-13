@@ -6,7 +6,7 @@
 ----
 
 ## Objectives:
-&ensp; &ensp; __1. SStudy and understand the Behavioral Design Patterns.__
+&ensp; &ensp; __1. Study and understand the Behavioral Design Patterns.__
 
 &ensp; &ensp; __2. As a continuation of the previous laboratory work, think about what communication between software entities might be involed in your system..__
 
